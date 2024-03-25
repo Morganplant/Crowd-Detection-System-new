@@ -49,7 +49,7 @@ for mac_addr, vendor1 in zip(df["macaddress"], df["macaddrvendor"]):
         if lookup_results := OuiLookup().query(mac_addr):
             vendor2 = list(lookup_results[0].values())[0]
         print(mac_addr)
-            vendor3 = get(f"https://api.macvendors.com/v1/lookup/{mac_addr}", headers=headers).json()["data"]["organization_name"]
+        vendor3 = get(f"https://api.macvendors.com/v1/lookup/{mac_addr}", headers=headers).json()["data"]["organization_name"]
         if "errors" in vendor3 or vendor3 is None:
             print("No MAC address Vendor Found [Skipping...]")
             continue

@@ -57,4 +57,4 @@ print_full(df["macaddrvendor"])
 print("Common Networking Devices:")
 print(common_devices)
 
-# TODO make the dataframe use the new vendors if there is any
+# TODO make the database use the new vendors if there is any

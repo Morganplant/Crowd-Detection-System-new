@@ -1,24 +1,11 @@
 import datetime as dt
 import ipaddress
-import logging
 
 import nmap3
 import pandas as pd
-from rich.logging import RichHandler
 import pymysql
+from utils import connection, logging as log
 
-from arp import get_arp_data
-from utils import connection
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    datefmt="[%X]",
-    handlers=[RichHandler(rich_tracebacks=True)]
-)
-
-arp_dataframe = get_arp_data()
 addrs = list(ipaddress.ip_network("192.168.0.0/16"))
 
 nmap = nmap3.Nmap()
@@ -30,7 +17,7 @@ for addr in addrs:
         data = results[addr]
     except Exception: # Privledges required to run scan
         if "error" in results:
-            logging.error(results["msg"])
+            log.error(results["msg"])
             exit()
 
     active_ports = [port["portid"] for port in data["ports"] if port["state"] == "open"]
@@ -42,11 +29,11 @@ for addr in addrs:
     
 
     if active_ports or hostname or macaddress or macaddrvendor or likely_os:
-        logging.info(f"Scanned [{addr}] ...")
+        log.info(f"Scanned [{addr}] ...")
         if len(hostname) > 1:
-            logging.info(f"[{addr}] : '{hostname}'")
+            log.info(f"[{addr}] : '{hostname}'")
         if len(macaddrvendor) > 1:
-            logging.info(f"[{addr}] : '{macaddrvendor}' ")
+            log.info(f"[{addr}] : '{macaddrvendor}' ")
         new_data = {
             "ip_address": addr,
             "active_ports": active_ports,
@@ -55,7 +42,7 @@ for addr in addrs:
             "macaddrvendor": macaddrvendor,
             "likely_os": likely_os,
         }
-        logging.debug(f"Inserting: \n{new_data}\n into the database...")
+        log.debug(f"Inserting: \n{new_data}\n into the database...")
         with connection.cursor() as cursor:
             sql = """
             INSERT INTO scan_data (ip_address, active_ports, hostname, macaddress, macaddrvendor, likely_os)
@@ -75,10 +62,10 @@ for addr in addrs:
                 new_data["macaddrvendor"],
                 new_data["likely_os"],
             ))
-        logging.debug("Data inserted into the database.")
+        log.debug("Data inserted into the database.")
         connection.commit()
     # else:
-    #     logging.info(f"Scanned [{addr}] ... No data found.")
+    #     log.info(f"Scanned [{addr}] ... No data found.")
 # Close the cursor and the database connection
 cursor.close()
 connection.close()

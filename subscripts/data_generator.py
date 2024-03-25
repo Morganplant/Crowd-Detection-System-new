@@ -1,17 +1,13 @@
 import random
-from faker import Faker
+
 import pymysql
+from faker import Faker
 from rich.progress import Progress
+from utils import connection
 
 # Set up the database connection
-connection = pymysql.connect(
-    host="127.0.0.1",
-    user="root",
-    password="",
-    database="crowd_pulse",
-)
 
-fake_num = 12
+fake_num = 1200
 
 # Create an instance of the Faker class
 fake = Faker()
@@ -22,11 +18,13 @@ with Progress() as progress:
     task = progress.add_task("[cyan]Generating fake data...", total=fake_num)
     for _ in range(fake_num):  # Generate 100 rows of fake data
         ip_address = fake.ipv4()
+        # trunk-ignore(bandit/B311)
         active_ports = [fake.port_number() for _ in range(random.randint(0, 5))]
-        hostname = fake.hostname()
+        # trunk-ignore(bandit/B311)
+        hostname = f"{fake.first_name()}'s {random.choice(['Laptop', 'Desktop', 'Phone', 'Tablet'])}"
         macaddress = fake.mac_address()
         macaddrvendor = fake.company()
-        likely_os = f"{fake.language_name()} {fake.last_name()} {fake.century()}"
+        likely_os = f"{fake.language_name()} {fake.century()}"
 
         new_data = {
             "ip_address": ip_address,
@@ -53,14 +51,17 @@ with connection.cursor() as cursor:
     likely_os = VALUES(likely_os)
     """
     for data in data_list:
-        cursor.execute(sql, (
-            data["ip_address"],
-            data["active_ports"],
-            data["hostname"],
-            data["macaddress"],
-            data["macaddrvendor"],
-            data["likely_os"],
-        ))
+        cursor.execute(
+            sql,
+            (
+                data["ip_address"],
+                data["active_ports"],
+                data["hostname"],
+                data["macaddress"],
+                data["macaddrvendor"],
+                data["likely_os"],
+            ),
+        )
     connection.commit()
 
 # Close the database connection

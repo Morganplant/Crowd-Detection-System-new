@@ -5,7 +5,7 @@ import pandas as pd
 from fuzzywuzzy import fuzz
 from rich import print
 
-from extras import DATA_DIR
+from utils import DATA_DIR
 
 
 def get_known_network_vendors():
