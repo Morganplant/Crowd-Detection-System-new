@@ -1,3 +1,4 @@
 venv/
 quick_scripts
 .python-version
+subscripts\__pycache__
